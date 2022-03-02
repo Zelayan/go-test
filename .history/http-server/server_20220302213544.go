@@ -1,15 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
-
-type Player struct {
-    Name string
-    Wins int
-}
 
 // PlayerStore stores score information about players.
 type PlayerStore interface {
@@ -20,32 +14,27 @@ type PlayerStore interface {
 // PlayerServer is a HTTP interface for player information.
 type PlayerServer struct {
     store  PlayerStore
-    http.Handler
+    http.Server
 }
 
 func NewPlayerServer(store PlayerStore) *PlayerServer {
-    p := new(PlayerServer)
+    p := &PlayerServer{
+        store,
+        http.NewServeMux(),
+    }
 
-    p.store = store
-
-    router := http.NewServeMux()
-    router.Handle("/league", http.HandlerFunc(p.leagueHandler))
-    router.Handle("/players/", http.HandlerFunc(p.playersHandler))
-
-    p.Handler = router
+    p.router.Handle("/league", http.HandlerFunc(p.leagueHandler))
+    p.router.Handle("/players/", http.HandlerFunc(p.playersHandler))
 
     return p
 }
 
-func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
-    json.NewEncoder(w).Encode(p.getLeagueTable())
-    w.WriteHeader(http.StatusOK)
+func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    p.router.ServeHTTP(w, r)
 }
 
-func (p *PlayerServer) getLeagueTable() []Player{
-    return []Player{
-        {"Chris", 20},
-    }
+func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
 }
 
 func (p *PlayerServer) playersHandler(w http.ResponseWriter, r *http.Request) {

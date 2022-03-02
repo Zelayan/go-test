@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -47,6 +46,11 @@ func (p *PlayerServer) getLeagueTable() []Player{
         {"Chris", 20},
     }
 }
+	
+
+
+
+
 
 func (p *PlayerServer) playersHandler(w http.ResponseWriter, r *http.Request) {
     player := r.URL.Path[len("/players/"):]
